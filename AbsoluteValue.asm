@@ -21,24 +21,24 @@ M=0
 0;JMP
 
 (NEGATIVE_CHECK)
+// Check for x == -32768
 @R0
 D=M
-@TWO_COMPLEMENT
-D=-D    // Compute -x (two’s complement)
+@MIN_VALUE
+D+1;JEQ    // If x == -32768, handle it
+
+// Compute -x using two's complement (-x = NOT x + 1)
+@R0
+D=M
+D=!D
+D=D+1
 
 @R1
 M=D    // Store |x| in R1
 @R2
 M=1    // Set flag R2 since x was negative
-
-// Check for x == -32768 (uncomputable case)
-@R0
-D=M
-@MIN_VALUE
-D+1;JEQ    // If x == -32768, jump
-
 @R3
-M=0    // Otherwise, set R3 = 0
+M=0    // x was negatable, so R3 = 0
 @END
 0;JMP
 
@@ -47,7 +47,12 @@ M=0    // Otherwise, set R3 = 0
 M=1    // Set R3 = 1 if x == -32768
 @R1
 M=R0   // Keep R1 unchanged
+@R2
+M=1    // R2 is still 1 since x was negative
+@END
+0;JMP
 
 (END)
 @END
 0;JMP  // Infinite loop to halt execution
+
