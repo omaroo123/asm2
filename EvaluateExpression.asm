@@ -1,112 +1,91 @@
 // EvaluateExpression.asm - Compute z = (x - y) * (x + y)
 // x is in R0, y is in R1; result z is stored in R2.
-// This program does not modify R0 or R1.
-// It uses registers R3-R10 as temporary storage.
+// R0 and R1 remain unchanged.
+// Temporary registers used: R3-R10.
 
-    // Compute diff = x - y, store in R3.
+    // Compute diff = x - y and store in R3.
     @R0
     D=M
     @R1
     D=D-M
     @R3
-    M=D        // R3 = diff
+    M=D            // R3 = diff
 
-    // Compute sum = x + y, store in R4.
+    // Compute sum = x + y and store in R4.
     @R0
     D=M
     @R1
     D=D+M
     @R4
-    M=D        // R4 = sum
+    M=D            // R4 = sum
 
-    // --- Determine the product sign ---
-    // Set R5 = diffSign: 0 if diff (R3) is non-negative, 1 if negative.
+    // --- Determine product sign ---
+    // Compute diffSign in R5: 0 if diff >= 0, 1 if diff < 0.
     @R3
     D=M
     @DIFF_POS
     D;JGE
     @R5
-    M=1       // diffSign = 1
-    @CHECK_SUM_SIGN
+    M=1
+    @SUM_CHECK
     0;JMP
 (DIFF_POS)
     @R5
-    M=0       // diffSign = 0
-(CHECK_SUM_SIGN)
-    // Set R6 = sumSign: 0 if sum (R4) is non-negative, 1 if negative.
+    M=0
+(SUM_CHECK)
+    // Compute sumSign in R6: 0 if sum >= 0, 1 if sum < 0.
     @R4
     D=M
     @SUM_POS
     D;JGE
     @R6
-    M=1       // sumSign = 1
-    @SET_PROD_SIGN
+    M=1
+    @SET_SIGN
     0;JMP
 (SUM_POS)
     @R6
-    M=0       // sumSign = 0
-(SET_PROD_SIGN)
-    // Compute productSign = diffSign XOR sumSign.
-    // (If R5 ≠ R6 then productSign = 1; else 0.) Store result in R7.
+    M=0
+(SET_SIGN)
+    // Product sign = diffSign XOR sumSign.
+    // If R5 != R6 then product will be negative.
     @R5
     D=M
     @R6
-    D=D-M   // D = diffSign - sumSign
-    @SET_PROD_NEG
-    D;JNE   // if nonzero, then productSign = 1
-    @SET_PROD_POS
-    0;JMP
-(SET_PROD_NEG)
+    D=D-M      // D = diffSign - sumSign
+    @NEGATIVE
+    D;JNE      // if nonzero, product is negative
     @R7
-    M=1     // product will be negative
-    @AFTER_PROD_SIGN
+    M=0        // otherwise, product is non-negative
+    @CONT_SIGN
     0;JMP
-(SET_PROD_POS)
+(NEGATIVE)
     @R7
-    M=0     // product will be non-negative
-(AFTER_PROD_SIGN)
+    M=1
+(CONT_SIGN)
 
     // --- Compute absolute values ---
-    // Compute |diff| and store in R8.
+    // |diff| in R8.
     @R3
     D=M
     @ABS_DIFF_POS
     D;JGE
-    @R3
-    D=M
     D=-D
-    @R8
-    M=D
-    @AFTER_ABS_DIFF
-    0;JMP
 (ABS_DIFF_POS)
-    @R3
-    D=M
     @R8
     M=D
-(AFTER_ABS_DIFF)
 
-    // Compute |sum| and store in R9.
+    // |sum| in R9.
     @R4
     D=M
     @ABS_SUM_POS
     D;JGE
-    @R4
-    D=M
     D=-D
-    @R9
-    M=D
-    @AFTER_ABS_SUM
-    0;JMP
 (ABS_SUM_POS)
-    @R4
-    D=M
     @R9
     M=D
-(AFTER_ABS_SUM)
 
     // --- Multiply |diff| (R8) by |sum| (R9) using repeated addition ---
-    // Initialize product accumulator in R10 to 0.
+    // Set product accumulator in R10 to 0.
     @0
     D=A
     @R10
@@ -116,15 +95,15 @@
     @R9
     D=M
     @END_MULT
-    D;JEQ       // if R9 == 0, exit loop
-    // Add abs(diff) (R8) to the accumulator (R10).
+    D;JEQ         // if |sum| is 0, exit loop
+    // Add |diff| (R8) to accumulator (R10).
     @R10
     D=M
     @R8
     D=D+M
     @R10
     M=D
-    // Decrement R9 by 1:
+    // Decrement |sum| counter in R9.
     @R9
     D=M
     @1
@@ -135,24 +114,27 @@
     0;JMP
 (END_MULT)
 
-    // --- Apply the correct sign to the product ---
-    // If productSign (R7) is 1, then negate the product.
+    // --- Apply product sign ---
+    // If product sign (R7) is 1, then negate the product.
     @R7
     D=M
-    @CHECK_PRODUCT_SIGN
-    D;JEQ      // if 0, skip negation
+    @SKIP_NEG
+    D;JEQ         // if R7 == 0, skip negation
     @R10
     D=M
     D=-D
     @R10
     M=D
-(CHECK_PRODUCT_SIGN)
+(SKIP_NEG)
 
-    // Store final product in R2.
+    // Store the final product in R2.
     @R10
     D=M
     @R2
     M=D
 
-    (END)
-    // End of program.
+    // Infinite loop to end the program.
+(END)
+    @END
+    0;JMP
+
