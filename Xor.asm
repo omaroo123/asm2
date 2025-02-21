@@ -1,32 +1,35 @@
-// Xor.asm
-// Compute x XOR y element-wise
-// R0 = x
-// R1 = y
-// R2 = Result (x ⊕ y)
+// Xor.asm - Compute z = x ⊕ y (element-wise XOR)
+// x is in R0, y is in R1; result is stored in R2.
+// This program uses the identity: x ⊕ y = (x & ~y) | (~x & y)
+// R3 is used as a temporary register.
+// Note: R0 and R1 are preserved.
 
-@R0
-D=M
-@R1
-D=D|M      // TEMP1 = x OR y
-@TEMP1
-M=D
+    // Compute (x & ~y)
+    @R1
+    D=M         // D = y
+    D=!D        // D = ~y
+    @R3
+    M=D         // R3 = ~y
+    @R0
+    D=M         // D = x
+    @R3
+    D=D&M       // D = x & (~y)
+    @R2
+    M=D         // R2 = (x & ~y)
 
-@R0
-D=M
-@R1
-D=D&M      // TEMP2 = x AND y
-@TEMP2
-M=D
+    // Compute (~x & y)
+    @R0
+    D=M         // D = x
+    D=!D        // D = ~x
+    @R3
+    M=D         // R3 = ~x
+    @R1
+    D=M         // D = y
+    @R3
+    D=D&M       
 
-@TEMP2
-D=M
-D=!D       // TEMP3 = NOT (x AND y)
-@TEMP3
-M=D
-
-@TEMP1
-D=M
-@TEMP3
-D=D&M      // x XOR y = (x OR y) AND (NOT (x AND y))
-@R2
-M=D
+    
+    @R2
+    D=D|M     
+    @R2
+    M=D         

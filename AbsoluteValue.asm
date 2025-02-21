@@ -1,63 +1,70 @@
-// AbsoluteValue.asm
-// Compute absolute value |x|
-// R0 = x (input)
-// R1 = |x| (output)
-// R2 = 1 if input was negative, 0 otherwise
-// R3 = 1 if |x| cannot be computed, 0 otherwise
+// AbsoluteValue.asm - Compute z = |x|
+// x is stored in R0; result |x| is stored in R1.
+// R2 is the "negative" flag (1 if x < 0, else 0).
+// R3 is the error flag (1 if x = -32768, since |x| cannot be represented).
+// R0 is not modified.
 
-// Load x into D
-@R0
-D=M
+    @R0
+    D=M          // D = x
+    @POSITIVE
+    D;JGE        // if x >= 0, jump to positive branch
 
-// If x is positive or zero, store it directly in R1 and set flags to 0
-@POSITIVE_CASE
-D;JGE    
+    // ----- Negative branch (x < 0) -----
+    @1
+    D=A
+    @R2
+    M=D          // R2 = 1 (x is negative)
 
-// Check if x == -32768 (1000000000000000 in two's complement)
-@R0
-D=M
-@MIN_VALUE
-D+1;JEQ  
+    // Test for edge case: x == -32768.
+    // In 16-bit 2's complement, -32768 equals its own negation.
+    @R0
+    D=M          // D = x
+    D=-D         // D = -x
+    @R0
+    D=D-M       // D = (-x) - x; will be 0 only if x == -32768.
+    @EDGE
+    D;JEQ       // if D == 0, jump to edge-case handling
 
-// If x is negative but not -32768, compute -x using two’s complement
-@R0
-D=M
-D=!D
-D=D+1
-@R1
-M=D  // Store |x| in R1
-@R2
-M=1  // Set R2 since x was negative
-@R3
-M=0  // Set R3 to 0 since the absolute value was computable
-@END
-0;JMP
+    // Normal negative number: compute |x| = -x.
+    @R0
+    D=M
+    D=-D
+    @R1
+    M=D         // R1 = |x|
+    @0
+    D=A
+    @R3
+    M=D         // R3 = 0 (no error)
+    @END
+    0;JMP
 
-(POSITIVE_CASE)
-// If x is positive, just store it in R1
-@R0
-D=M
-@R1
-M=D  
-@R2
-M=0  // Not negative
-@R3
-M=0  // Computable
-@END
-0;JMP
+(POSITIVE)
+    // ----- Non-negative branch (x >= 0) -----
+    @R0
+    D=M
+    @R1
+    M=D         // R1 = x (absolute value is the same)
+    @0
+    D=A
+    @R2
+    M=D         // R2 = 0 (x is not negative)
+    @R3
+    M=D         // R3 = 0 (no error)
 
-(MIN_VALUE)
-// If x == -32768, keep R1 unchanged and set R3 = 1
-@R1
-M=R0  // Store R0 unchanged since absolute value cannot be computed
-@R2
-M=1   // Still negative
-@R3
-M=1   // Indicate absolute value cannot be computed
-@END
-0;JMP
+(EDGE)
+    // ----- Edge case: x == -32768 -----
+    // Absolute value cannot be computed.
+    @R0
+    D=M
+    @R1
+    M=D         // Leave R1 unchanged (contains x)
+    @1
+    D=A
+    @R3
+    M=D         // R3 = 1 (error flag)
 
 (END)
-@END
-0;JMP  // Infinite loop
+    // End of program.
+
+
 
