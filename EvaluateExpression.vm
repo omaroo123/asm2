@@ -1,0 +1,22 @@
+// Push constant 17 onto the stack
+push constant 17
+
+// Push x (argument[0]) onto the stack
+push argument 0
+
+// Compute 17 + x
+add
+
+// Push y (argument[1]) onto the stack
+push argument 1
+
+// Push constant 3 onto the stack
+push constant 3
+
+// Multiply y by 3 (3y)
+call Math.multiply 2
+
+// Compute (17 + x) - 3y
+sub
+
+// Result is left at the bottom of the stack

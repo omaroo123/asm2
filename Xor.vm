@@ -2,7 +2,7 @@
 push argument 0
 push argument 1
 
-// Compute x XOR y using De Morgan’s identity
+// Compute x XOR y using De Morgan’s identity:
 // x ⊕ y = (x | y) & ~(x & y)
 push argument 0
 push argument 1
@@ -14,4 +14,5 @@ not
 and
 
 // Store the result in argument[2]
+dup  // Duplicate the result to leave it on stack
 pop argument 2

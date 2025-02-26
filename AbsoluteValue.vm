@@ -1,26 +1,28 @@
 // Push x onto the stack
 push argument 0
+push argument 0  // Duplicate x for comparison
 
-// Duplicate x to compare
-dup
-// If x < 0, negate it
+// Compare x < 0
+push constant 0
+lt
 if-goto NEGATIVE
 goto POSITIVE
 
 NEGATIVE:
+  push argument 0
   neg
+  pop argument 1  // Store |x| in argument[1]
   push constant 1
-  pop argument 2  // argument[2] = 1 (indicates x was negative)
-  goto STORE_ABS
+  pop argument 2  // argument[2] = 1 (x was negative)
+  goto CHECK_ERROR
 
 POSITIVE:
+  push argument 0
+  pop argument 1  // Store |x| in argument[1]
   push constant 0
-  pop argument 2  // argument[2] = 0 (indicates x was not negative)
+  pop argument 2  // argument[2] = 0 (x was non-negative)
 
-STORE_ABS:
-  pop argument 1  // Store absolute value in argument[1]
-
-  // Check if absolute value cannot be computed (edge cases, if needed)
+CHECK_ERROR:
+  // For this problem, we assume abs value is always computable
   push constant 0
-  pop argument 3  // argument[3] = 0 (assume abs value is valid)
-
+  pop argument 3  // argument[3] = 0 (abs value is computable)
