@@ -1,0 +1,8 @@
+// Push x onto the stack twice
+push argument 0
+push argument 0
+
+// Multiply x * x
+call Math.multiply 2  // Using the built-in multiplication function
+
+// The result remains on the stack as required

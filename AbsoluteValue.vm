@@ -1,0 +1,26 @@
+// Push x onto the stack
+push argument 0
+
+// Duplicate x to compare
+dup
+// If x < 0, negate it
+if-goto NEGATIVE
+goto POSITIVE
+
+NEGATIVE:
+  neg
+  push constant 1
+  pop argument 2  // argument[2] = 1 (indicates x was negative)
+  goto STORE_ABS
+
+POSITIVE:
+  push constant 0
+  pop argument 2  // argument[2] = 0 (indicates x was not negative)
+
+STORE_ABS:
+  pop argument 1  // Store absolute value in argument[1]
+
+  // Check if absolute value cannot be computed (edge cases, if needed)
+  push constant 0
+  pop argument 3  // argument[3] = 0 (assume abs value is valid)
+
