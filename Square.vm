@@ -1,8 +1,57 @@
-// Push x onto the stack twice
+push constant 0
+pop static 0
 push argument 0
+push constant 0
+lt
+if-goto NegativeCondition
 push argument 0
+push constant 0
+eq
+if-goto ZeroCondition
+push argument 0
+pop static 1
+push argument 0
+pop static 2
+goto MULTIPLY
 
-// Multiply x * x
-call Math.multiply 2
+label ZeroCondition
+    push argument 0
+    goto FINISHED
 
-// The result remains at the bottom of the stack
+
+label NegativeCondition
+    push argument 0
+    neg
+    pop static 1
+    push static 1
+    pop static 2
+    goto MULTIPLY
+
+label MULTIPLY
+    push static 0
+    push static 2
+    add
+    pop static 0
+
+    push static 1
+    push constant 1
+    sub
+    pop static 1
+
+    push static 1
+    push constant 0
+    eq
+    if-goto END
+    
+    goto MULTIPLY
+
+
+label END
+    push static 0
+    pop argument 1
+    goto FINISHED
+
+
+
+
+label FINISHED

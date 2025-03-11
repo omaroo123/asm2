@@ -1,28 +1,66 @@
-// Push x onto the stack
 push argument 0
-push argument 0  // Duplicate x for comparison
-
-// Compare x < 0
 push constant 0
 lt
-if-goto NEGATIVE
-goto POSITIVE
+neg 
+pop argument 2
 
-NEGATIVE:
-  push argument 0
-  neg
-  pop argument 1  // Store |x| in argument[1]
-  push constant 1
-  pop argument 2  // argument[2] = 1 (x was negative)
-  goto CHECK_ERROR
+push argument 0
+push constant 0
+eq
+if-goto FIRSTCONDITION
 
-POSITIVE:
-  push argument 0
-  pop argument 1  // Store |x| in argument[1]
-  push constant 0
-  pop argument 2  // argument[2] = 0 (x was non-negative)
+push argument 0
+push constant 0
+lt
+if-goto SECONDCONDITION
 
-CHECK_ERROR:
-  // For this problem, we assume abs value is always computable
-  push constant 0
-  pop argument 3  // argument[3] = 0 (abs value is computable)
+push argument 0
+push constant 0
+gt
+if-goto THIRDCONDITION
+
+
+label FIRSTCONDITION
+    push constant 0
+    pop argument 1
+    push constant 0 
+    pop argument 3
+    goto END
+
+
+label SECONDCONDITION
+    push constant 32767
+    push argument 0
+    add
+    push constant 1
+    add
+    pop static 0
+    push static 0
+    push constant 0
+    eq
+    if-goto INCOMPLETE
+    push static 0
+    push constant 0
+    lt
+    if-goto INCOMPLETE
+    push argument 0
+    neg
+    pop argument 1
+    push constant 0
+    pop argument 3
+    goto END
+
+
+label INCOMPLETE
+    push constant 1
+    pop argument 3
+    goto END
+
+label THIRDCONDITION
+    push argument 0
+    pop argument 1
+    push constant 0
+    pop argument 3
+    goto END
+
+label END
